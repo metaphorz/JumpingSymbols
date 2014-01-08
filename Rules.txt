@@ -1,0 +1,2890 @@
+Drag(X,Y) means that node X is dragged onto node Y in the tree.
+
+And() and Or() are predicates that specify a way to use Boolean operators.
+Equal(X,{}) means that X is equal to one of the items in the 2nd argument.
+!Equal(X,{}) means that X is not equal to any of the items in the 2nd argument.
+Parent(X) is a parent of X.
+GParent(X) is a grandparent of X.
+Multiple(X) is a multiple of X
+HasAncestor(X, Y) means that X has an ancestor Y.
+!HasAncestor(X, Y) means that X don't have an ancestor Y.
+HasChild(X, Y) means that X has a child Y.
+!HasChild(X, Y) means that X don't have a child Y.
+Include(X, Y) means that X has a descendant Y.
+!Include(X, Y) means that X don't have a descendant Y.
+Write() means that you pop-up a message to "write" whatever is the argument
+
+a word starting with N means one Number ex)N1, N2
+a word starting with B means one Binary ex)B1, B2
+a word starting with O means one Operator ex)O1, O2
+a word starting with E means one Expression ex)E1, E2
+a word starting with P means one Parenthesis ex)P1, P2
+a word starting with OP means one Open Parenthesis ex)OP1, OP2
+a word starting with CP means one Close Parenthesis ex)CP1, CP2
+
+to access a child we use period(.) ex) B1.R.o.k
+R = Right
+L = Left
+o = operator
+B = Binary
+P = Parenthesis
+k = key
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Basic Law
+
+/*
+Rule ID ("Rule_R1-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), HasChild(B1.L, N2), HasChild(RChild(B1), N3),
+        Equal(O1, B1.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [B1.L.n.k] and [B1.R.n.k].)
+
+Example
+3/*+-4 or +-3+-4 or /*+-3/*4 or /*+-3/*4+-
+drag '3' or '4' and drop on 'operator' between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_W1-1-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), HasChild(B1.L, N2), HasChild(RChild(B1), N3),
+        !Equal(O1, B1.o) )
+THEN Write(You must first simplify [B1.L.n.k][B1.o.k][B1.R.n.k] before continuing.)
+
+Example
+3/*+-4 or +-3+-4 or /*+-3/*4 or /*+-3/*4+-
+drag '3' or '4' and drop on 'operator' which is not between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_R1-2")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        HasChild(B1.R, B2), HasChild(B2.L, N2), Equal(B1.o.k, {*, /}),
+        Equal(O1, B1.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [N1.k] and [N2.k].)
+
+Example
+3/*4/* or /*+-3/*4/*
+drag '3' and drop on 'operator' between '3' 
+*/
+
+/*
+Rule ID ("Rule_W1-2-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        HasChild(B1.R, B2), HasChild(B2.L, N2), Equal(B1.o.k, {*, /}),
+        !Equal(O1, B1.o) )
+THEN Write(You must first simplify [N1.k][B1.o.k][B2.L.n.k] before continuing.)
+
+Example
+3/*4/* or /*+-3/*4/*
+drag '3' and drop on 'operator' which is not between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_R1-3")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        HasChild(B1.R, B2), HasChild(B2.L, N2), Equal(B1.o.k, {+, -}),
+        Equal(O1, B1.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [N1.k] and [N2.k].)
+
+Example
+3+-4+- or +-3+-4+-
+drag '3' and drop on 'operator' between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_W1-3-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        HasChild(B1.R, B2), HasChild(B2.L, N2), Equal(B1.o.k, {+, -}),
+        !Equal(O1, B1.o) )
+THEN Write(You must first simplify [N1.k][B1.o.k][B2.L.n.k] before continuing.)
+
+Example
+3+-4+- or +-3+-4+-
+drag '3' and drop on 'operator' between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_R1-4")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B2.L, N2), Equal(B2.o.k, {*, /}),
+        Equal(O1, B2.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [N2.k] and [N1.k].)
+
+Example
+3/*4/* or /*+-3/*4/*
+drag '4' and drop on 'operator' between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_W1-4-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B2.L, N2), Equal(B2.o.k, {*, /}),
+        !Equal(O1, B2.o) )
+THEN Write(You must first simplify [N2.k][O1.k][N1.k] before continuing.)
+
+Example
+3/*4/* or /*+-3/*4/*
+drag '4' and drop on 'operator' which is not between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_R1-5")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B2.L, N2), !Equal(B2.o.k, {*, /}),
+        Equal(O1, B2.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [N2.k] and [N1.k].)
+
+Example
+3+-4+- or +-3+-4+-
+drag '4' and drop on 'operator' between '3' and '4'
+*/
+
+/*
+Rule ID ("Rule_W1-5-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B2.L, N2), !Equal(B2.o.k, {*, /}),
+        !Equal(O1, B2.o) )
+THEN Write(You must first simplify [N2.k][O1.k][N1.k] before continuing.)
+
+Example
+3+-4+- or +-3+-4+-
+drag '4' and drop on 'operator' which is not between '3' and '4'
+*/
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Commutative Law
+
+/*
+Rule ID ("Rule_R2-1")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.R, N3)
+        Or( And(Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(B1.o.k, -), Equal(GParent(B1), B2), Equal(B2.o.k, -)),
+            And(Equal(B1.o.k, +), Equal(Parent(B1), {P, E})),
+            Equal(B1.o.k, *) ),
+        HasChild(B1.L.has(N4)),
+        Equal(GParent(N1), GParent(N2)) )
+THEN Write(Right! [B2.o.k][B1.L.n.k][B1.o.k][B1.R.n.k] is commutative.)
+
+Example
+3*+4 or +3+4 or -3-4 or /*+-3*4
+drag '3' and drop on '4' OR drag '4' and drop on '3' 
+*/
+
+/*
+Rule ID ("Rule_W2-1-1")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.R, N3)
+        Or( And(Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(B1.o.k, -), Equal(GParent(B1), B2), Equal(B2.o.k, -)),
+            And(Equal(B1.o.k, +), Equal(Parent(B1), {P, E})),
+            Equal(B1.o.k, *) ),
+        HasChild(B1.L.has(N4)),
+        !Equal(GParent(N1), GParent(N2)) )
+THEN Write(You can switch [B1.L.n.k] to [B1.R.n.k] in [B1.L.n.k][B1.o.k][B1.R.n.k] for commutation.)
+
+Example
+3*+4 or +3+4 or -3-4 or /*+-3*4
+drag '3' and drop on 'number' which is not '4' OR drag '4' and drop on 'number' which is not '3'
+*/
+
+/*
+Rule ID ("Rule_W2-1-2")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.L, N3), HasChild(B1.L, N4),
+        Equal(B1.o.k, {/, -}), Equal(Parent(B1), {P, E}),
+        Equal(GParent(N1), GParent(N2)) )
+THEN Write([B1.o.k] in [B1-subtree] must be + or * for commutation.)
+
+Example
+3/-4
+drag '3' and drop on '4' OR drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-1-3")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.L, N3), HasChild(B1.L, N4),
+        Equal(B1.o.k, /), Equal(GParent(B1), B2), Equal(B2.o.k, {*, /}),
+        Equal(GParent(N1), GParent(N2))
+THEN Write([B1.o.k] in [B1-subtree] must be * for commutation.)
+
+Example
+/*3/4 or /*3/4+-
+drag '3' and drop on '4' OR drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-1-4")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.L, N3), HasChild(B1.L, N4),
+        Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, {+, -}), !Equal(B1.o.k, B2.o.k)),
+        Equal(GParent(N1), GParent(N2)) )
+THEN Write([B1.o.k] in [B1-subtree] must be [B2.o.k] or * for commutation.)
+
+Example
++3-4 or -3+4
+drag '3' and drop on '4' OR drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-1-5")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.L, N3), HasChild(B1.L, N4),
+        Or( And(Equal(B1.o.k, /), Equal(GParent(B1), B2), !Equal(B2.L.B, B1), Equal(B2.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})) ),
+        Equal(GParent(N1), GParent(N2)) )
+THEN 
+    IF !Equal(B2.L.B, B1)
+        Write([B1.o.k] in [B1-subtree] must be [B2.o.k] or * for commutation.)
+    ELSE IF Equal(B2.L.B, B1)
+        Write([B1.o.k] in [B1-subtree] must be [B3.o.k] or * for commutation.)
+
+Example
++-3/4 or +-3/4+-
+drag '3' and drop on '4' OR drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-1-6")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), HasChild(B1.R, N3),
+        Or( And(Equal(B2.o.k, {+, -}), HasAncestor(N1, B2), Equal(B1.R, N4), Equal(B1.o.k, {*, /}), Equal(B2.o.k, {+, -}),
+            And(HasChild(B2.R, N4), Include(B1.L, B2), Equal(B2.o.k, {*, /}), Equal(B1.o.k, {+, -})) ),
+        Equal(N1, B1.R.n), Equal(N2, B2.R.n)) )
+THEN 
+    IF Equal(B1.o.k, {*, /})
+        Write([B1.o.k] before [B1.R.n.k] must be [B2.o.k] for commutation.)
+        Write([B2.o.k] in [B1.R.n.k][B2.o.k][B2.R.n.k] must be * for commutation.)
+    ELSE IF Equal(B1.o.k, {+, -})
+        Write([B2.o.k] before [B2.o.k][B2.R.n.k] must be [B1.o.k] for commutation.)
+        Write([B1.o.k] in [B2.R.n.k][B1.o.k][B1.R.n.k] must be * for commutation.)
+
+Example
+/*3+-4
+drag '3' and drop on '4' OR drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_R2-2")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Euqal(GParent(B1), B2)
+        Or( And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, -), Equal(GParent(B2), B3), Equal(B3.o.k, -)), 
+            And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {P, E}), 
+            !Equal(B2.o.k, *) ),
+        HasChild(B2.L, N3),
+        Equal(N2, B2.L.n) )
+THEN Write(Right! [B4.o.k][B2.L.n.k][B2.o.k][B1.L.n.k] is commutative.)
+
+Example
+3+4+- or 3*4/*+- or +3+4+- or -3-4+- or /*+-3*4/*+-
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-1")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Euqal(GParent(B1), B2)
+        Or( And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, -), Equal(GParent(B2), B3), Equal(B3.o.k, -)), 
+            And(!Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {P, E}), 
+            !Equal(B2.o.k, *) ),
+        HasChild(B2.L, N3),
+        !Equal(N2, B2.L.n) )
+THEN Write(You can switch [B2.L.n.k] to [N1.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] for commutation.)
+
+Example
+3+4+- or 3*4/*+- or +3+4+- or -3-4+- or /*+-3*4/*+-
+drag '3' and drop on 'number' which is not '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-2")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        HasChild(B1.R, B2), Equal(Parent(B1), {P, E}),
+        Or( And(Equal(B1.o.k, /), Equal(B2.o.k, {*, /})),
+            And(Equal(B1.o.k, -), Equal(B2.o.k, {+, -})) ),
+        Equal(N1, B2.L.n) )
+THEN 
+    IF Equal(B1.o.k, /)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B2.L.n.k] must be * for commutation.)
+    ELSE IF Equal(B1.o.k, -)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B2.L.n.k] must be + or * for commutation.)
+
+Example
+3/4/*  or 3-4+-
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-3")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(Parent(B2), {P, E}),
+        Equal(B1.o.k, /), Equal(B2.o.k, {+, -}),
+        Equal(N2, B1.L.n) )
+THEN Write([B1.o.k] in [B1-subtree] must be + or * for commutation.)
+
+Example
+3/4+-
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-4")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        HasChild(B1.R, B2), Equal(Parent(B1), {P, E}),
+        Or( And(HasChild(B2.L, N3), Equal(B1.o.k, {+, -}), Equal(B2.o.k, {*, /})),
+            And(HasChild(B2.L, B3), Equal(B1.o.k, {+, -}), Equal(B3.o.k, {*, /})) ),
+        Or( Equal(N2, B2.L.n), And(HasChild(B2.L, B3), Equal(N2, B3.L.n)) ) )
+THEN 
+    IF And(Equal(B1.o.k, +), Equal(N2, B2.L.n))
+        Write([B2.o.k] after [B2.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B2.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(B1.o.k, +), Equal(N2, B3.L.n))
+        Write([B3.o.k] after [B3.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n] must be * for commutation.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(N2, B2.L.n))
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B2.L.n] must be * for commutation.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(N2, B3.L.n))
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n] must be * for commutation.)
+
+Example
+/*3+-4/*+-
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-5")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(B2.o.key, {+, -}), HasAncestor(N1, B2), Equal(B1.o.k, {*, /}), HasChild(B2.R, B3)
+        Or( Equal(N2, B3.L.n), And(HasChild(B3.L, B4), Equal(N2, B4.L.n)) ) )
+THEN Write()
+    IF And(Equal(N2, B3.L.n), Equal(B3.o.k, {+, -}))
+        Wirte([B1.o.k] before [B1.R.n.k] must be [B2.o.k] for commutation.)
+        Wirte([B2.o.k] in [B1.R.n.k][B2.o.k][B3.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B3.L.n), Equal(B3.o.k, {*, /}))
+        Wirte([B1.o.k] before [B1.R.n.k] must be [B2.o.k] AND [B3.o.k] after [B3.L.n.k] must be + or - for commutation.)
+        Wirte([B2.o.k] in [B1.R.n.k][B2.o.k][B3.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B4.L.n), Equal(B4.o.k, {*, /}))
+        Wirte([B1.o.k] before [B1.R.n.k] must be [B2.o.k] AND [B4.o.k] after [B4.L.n.k] must be + or - for commutation.)
+        Wirte([B2.o.k] in [B1.R.n.k][B2.o.k][B4.L.n.k] must be * for commutation.)
+Example
+/*3+-4/*+-
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-6")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B1.R, B3),
+        Or( And(Equal(B2.o.k, -), Equal(B1.o.k, +)),
+            And(Equal(B2.o.k, +), Equal(B1.o.k, -)),
+            And(Equal(B2.o.k, +), Equal(B1.o.k, +)),
+            And(Equal(B2.o.k, -), Equal(B1.o.k, -)),
+            And(Equal(B2.o.k, {*, /}), Equal(B1.o.k, /), Equal(B3.o.k, {*, /})) ),
+        Or( Equal(N2, B3.L.n), And(HasChild(B3.L, B4), Equal(N2, B4.L.n)) ) )
+THEN 
+    IF And(Equal(N2, B3.L.n), Equal(B3.o.k, {+, -}))
+        Write([B2.o.k] before [B1.L.n.k] must be [B1.o.k] for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n.k] must be [B2.o.k] or * for commutation.)
+    ELSE IF And(Equal(N2, B3.L.n), Equal(B3.o.k, {*, /}), !Equal(B1.o.k, B2.o.k))
+        Write([B2.o.k] before [B1.L.n.k] must be [B1.o.k] AND [B3.o.k] after [B3.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B4.L.n), Equal(B4.o.k, {*, /}), !Equal(B1.o.k, B2.o.k))
+        Write([B2.o.k] before [B1.L.n.k] must be [B1.o.k] AND [B4.o.k] after [B4.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B4.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B3.L.n), Equal(B3.o.k, {*, /}), Equal(B1.o.k, B2.o.k))
+        Write([B3.o.k] after [B3.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B4.L.n), Equal(B4.o.k, {*, /}), Equal(B1.o.k, B2.o.k))
+        Write([B4.o.k] after [B4.L.n.k] must be + or - for commutation.)
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B4.L.n.k] must be * for commutation.)
+    ELSE IF And(Equal(N2, B3.L.n), Equal(B3.o.k, /))
+        Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n.k] must be * for commutation.)
+
+Example
+-3+-4+- or +-3+-4/* or /*3/4/*
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W2-2-7")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), HasChild(B1.R, B3),
+        Or( And(Equal(B2.R.B, B1), Equal(B2.o.k, {+, -}), Equal(B1.o.k, /), Equal(B3.o.k, {*, /})),
+            And(Equal(B2.L.B, B1), Equal(GParent(B2), B4), Equal(B4.o.k, {+, -}), Equal(B1.o.k, /), Equal(B3.o.k, {*, /})) ),
+        Equal(N2, B3.L.n) )
+THEN Write([B1.o.k] in [B1.L.n.k][B1.o.k][B3.L.n.k] must be * for commutation.)
+
+Example
++-3/4/*
+drag '3' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_R2-3")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(HasChild(B1.R, B2), HasChild(B2.L, N3),
+        Or( And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B3) , Equal(B3.o.k, +)),
+            And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, -), Equal(GParent(B1), B3) , Equal(B3.o.k, -)),
+            And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {P, E})),
+            Equal(B1.o.k, *) ),
+        Equal(N2, B2.L.n) )
+THEN Write(Right! [B4.o.k][B1.L.n.k][B1.o.k][B2.L.n.k] is commutative.)
+
+Example
+3+4+- or 3*4/*+- or +3+4+- or -3-4+- or /*+-3*4/*+-
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-1")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(HasChild(B1.R, B2), HasChild(B2.L, N3),
+        Or( And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B3) , Equal(B3.o.k, +)),
+            And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, -), Equal(GParent(B1), B3) , Equal(B3.o.k, -)),
+            And(!Equal(B2.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {P, E})),
+            Equal(B1.o.k, *) ),
+        !Equal(N2, B2.L.n) )
+THEN Write(You can switch [B1.L.n.k] to [B2.L.n.k] in [B1.L.n.k][B1.o.k][N2.k] for commutation.)
+
+Example
+3+4+- or 3*4/*+- or +3+4+- or -3-4+- or /*+-3*4/*+-
+drag '4' and drop on 'number' which is not '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-2")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), Equal(Parent(B2), {P, E}),
+        Or( And(Equal(B2.o.k, /), Equal(B1.o.k, {*, /})),
+            And(Equal(B2.o.k, -), Equal(B1.o.k, {+, -})) ),
+        Equal(N2, B2.L.n) )
+THEN 
+    IF (Equal(B2.o.k, /))
+        Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+    ELSE IF (Equal(B2.o.k, -))
+        Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be + or * for commutation.)
+
+Example
+3/4/*  or 3-4+-
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-3")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.R.n, N1),
+        Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(Parent(B2), {P, E}),
+        Equal(B1.o.k, /), Equal(B2.o.k, {+, -})
+        Equal(N2, B1.L.n) )
+THEN Write([B1.o.k] in [B1-subtree] must be + or * for commutation.)
+
+Example
+3/4+-
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-4")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2)
+        Or( And(Equal(B2.R.B, B1), Equal(B2.o.k, {+, -}), Equal(B1.o.k, {*, /}), Equal(Parent(B2), {P, E})),
+            And(Equal(B2.R.B, B1), Equal(B2.o.k, {+, -}), Equal(B1.o.k, {*, /}), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -}), Equal(B1.o.k, {*, /}), Equal(Parent(B3), {P, E})),
+            And(Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -}), Equal(B1.o.k, {*, /}), Equal(GParent(B3), B4), Equal(B4.o.k, {+, -})) ),
+        Or( Equal(N2, B2.L.n), And(HasChild(B2.L, B1), Equal(N2, B3.L.n)) ) )
+THEN 
+    IF Equal(N2, B2.L.n))
+        IF AND(Equal(B2.o.k, +), Equal(Parent(B2), {P, E}))
+            Write([B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF AND(Equal(B2.o.k, -), Equal(Parent(B2), {P, E}))
+            Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF AND(Equal(GParent(B2), B3), !Equal(B2.o.k, B3.o.k))
+            Write([B3.o.k] before [B2.L.n.k] must be [B2.o.k] AND [B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B2.o.k] in [B3.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF AND(Equal(GParent(B2), B3), Equal(B2.o.k, B3.o.k))
+            Write([B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B2.o.k] in [B3.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+
+    ELSE IF Equal(N2, B3.L.n)
+        IF Equal(B3.o.k, +)
+            Write([B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B3.o.k] in [B3.L.n.k][B3.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF Equal(B3.o.k, -)
+            Write([B3.o.k] in [B3.L.n.k][B3.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF And(Equal(GParent(B3), B4), !Equal(B3.o.k, B4.o.k))
+            Write([B4.o.k] before [B3.L.n.k] must be [B3.o.k] AND [B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B3.o.k] in [B4.L.n.k][B3.o.k][B1.L.n.k] must be * for commutation.)
+        ELSE IF And(Equal(GParent(B3), B4), Equal(B3.o.k, B4.o.k))
+            Write([B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+            Write([B3.o.k] in [B4.L.n.k][B3.o.k][B1.L.n.k] must be * for commutation.)
+
+Example
+3+-4/* or +-3+-4/*
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-5")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), Equal(B3.R, N3), Include(B2.L, B3)
+        Equal(B3.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(B1.o.k, {+, -})
+        Equal(N2, B3.R.n) )
+THEN Write([B3.o.k] before [B3.R.n.k] must be [B2.o.k] for commutation.)
+     Write([B2.o.k] in [B3.R.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+
+Example
+/*3+-4+-
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-6")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2),
+        Or( And(Equal(B2.R.B, B1), Equal(B3.R, N3), Include(B2.L, B3), Equal(B3.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(B1.o.k, {*, /})),
+            And(Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B4.R, N3), Include(B3.L, B4), Equal(B4.o.k, {*, /}), Equal(B3.o.k, {+, -}), Equal(B1.o.k, {*, /})) ),
+        Or( Equal(N2, B3.R.n), And(HasChild(B2.L, B1), Equal(N2, B4.R.n)) ) )
+THEN
+    IF Equal(B2.R.B, B1)
+        Write([B3.o.k] before [B3.R.n.k] must be [B2.o.k] AND [B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+        Write([B2.o.k] in [B3.R.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+    ELSE IF Equal(B2.L.B, B1)
+        Write([B4.o.k] before [B4.R.n.k] must be [B3.o.k] AND [B1.o.k] after [B1.L.n.k] must be + or - for commutation.)
+        Write([B3.o.k] in [B4.R.n.k][B3.o.k][B1.L.n.k] must be * for commutation.)
+
+Example
+/*3+-4/*
+drag '4' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W2-3-7")
+
+Rule
+IF And( Drag(N1,N2),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1),
+        Equal(GParent(B1), B2), Equal(GParent(B2), B3),
+        Or( And(Equal(B3.o.k, -), Equal(B2.o.k, +), Equal(B1.o.k, {+, -})),
+            And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(B1.o.k, {+, -})),
+            And(Equal(B3.R.B, B2), Equal(B3.o.k, {+, -}), Equal(B2.o.k, /), Equal(B1.o.k, {*, /})),
+            And(Equal(B3.L.B, B2), Equal(GParent(B3), B4) ,Equal(B4.o.k, {+, -}), Equal(B2.o.k, /), Equal(B1.o.k, {*, /})) ),
+        Equal(N2, B2,L.n) )
+THEN
+    IF Equal(B2.o.k, {+, -})
+        Write([B3.o.k] before [B2.L.n.k] must be [B2.o.k] for commutation.)
+        Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be [B3.o.k] or * for commutation.)
+    ELSE IF Equal(B2.o.k, /)
+        Write([B2.o.k] in [B2.L.n.k][B2.o.k][B1.L.n.k] must be * for commutation.)
+
+Example
+-3+4+- or +3-4+- or /*3/4/* or +-3/4/*
+drag '4' and drop on '3'
+*/
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Associative Law
+
+/*
+Rule ID ("Rule_R3-1")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        Equal(N1, P1.B.R.n) )
+THEN Write(Right! [P1-subtree][B1.o.k][B1.R.n.k] is associative.)
+
+Example
+(3+4)+-5 or +(3+4)+-5 or (3*4)*5 or /*+-(3*4)*5
+drag '(' and drop on '4' 
+*/
+
+/*
+Rule ID ("Rule_W3-1-1")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        !Equal(N1, P1.B.R.n) )
+THEN Write(You can drag [OP1.k] over [P1.B.R.n.k] in [P1-subtree][B1.o.k][B1.R.n.k] for association.)
+
+Example
+(3+4)+-5 or +(3+4)+-5 or (3*4)*5 or /*+-(3*4)*5
+drag '(' and drop on 'number' which is not '4'
+*/
+
+/*
+Rule ID ("Rule_W3-1-2")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), Equal(B2.o.k, {+, -}), HasAncestor(P1, B2), HasChild(B2.R, N4),
+        Equal(B1.o.k, {*, /}),
+        Equal(N1, P1.B.R.n) )
+THEN 
+    IF Equal(P1.B.o.k, +)
+        ex) /*(3+4)+-5
+        Write([B1.o.k] before [P1-subtree] must be + for association.)
+    ELSE IF And(Equal(B1.o.k, *) ,Equal(P1.B.o.k, *))
+        ex) *(3*4)+-5
+        Write([B2.o.k] between [P1-subtree] and [B2.R.n.k] must be * for association.)
+    ELSE
+        ex) /*(3/-4)+-5 or /(3*4)+-5
+        Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+
+Example
+/*(3/*+-4)+-5
+drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W3-1-3")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, -)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}) ),
+        Equal(N1, P1.B.R.n) )
+THEN
+    IF AND(Equal(Parent(B1), {E, P}), Equal(P1.B.o.k, *))
+        ex) (3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(Parent(B1), {E, P}), !Equal(P1.B.o.k, *))
+        ex) (3/-4)-+5
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+        ex) -(3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([B2.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, -), Equal(P1.B.o.k, {/, -}))
+        ex) -(3/-4)-+5
+        Write()
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+        ex) +(3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, +), Equal(P1.B.o.k, {/, -}))
+        ex) +(3/-4)-+5
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+
+Example
+-(3/*+-4)+-5 or +(3/*-4)-+5 or (3/*-4)-+5
+drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W3-1-4")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.R.B, B1), Equal(B2.o.k, {+, -})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(GParent(B2), B3), Equal(B2.o.k, {+, -})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(Parent(B1), {P, E})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(Parent(B2), {E, P})) ),
+        Equal(N1, P1.B.R.n) )    
+THEN
+    IF AND(Or(Equal(Parent(B1), {E, P}), And(Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(Parent(B2), {E, P}))))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) (3*4)/5 or (3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +))
+            ex) (3+4)/5 or (3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}))
+            ex) (3/-4)/5 or (3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +))
+            ex) (3+4)*5 or (3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) (3/-4)*5 or (3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.R.B, B1))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-(3*4)/5 or +-(3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B2.o.k, +))
+            ex) +(3+4)/5 or +(3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B2.o.k, -))
+            ex) -(3+4)/5 or -(3+4)/5+-
+            Write([B2.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B2.o.k, +))
+            ex) +(3/-4)/5 or +(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B2.o.k, -))
+            ex) -(3/-4)/5 or -(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B2.o.k, +))
+            ex) +(3+4)*5 or +(3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B2.o.k, -))
+            ex) -(3+4)*5 or -(3+4)*5+-
+            Write([B2.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) +-(3/-4)*5 or +-(3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(GParent(B2), B3))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-(3*4)/5 or +-(3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B3.o.k, +))
+            ex) +(3+4)/5 or +(3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B3.o.k, -))
+            ex) -(3+4)/5 or -(3+4)/5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B3.o.k, +))
+            ex) +(3/-4)/5 or +(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B3.o.k, -))
+            ex) -(3/-4)/5 or -(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B3.o.k, +))
+            ex) +(3+4)*5 or +(3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B3.o.k, -))
+            ex) -(3+4)*5 or -(3+4)*5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) +-(3/-4)*5 or +-(3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
++-(3/*+-4)/5 or +-(3/+-4)*5 or (3/*+-4)/5 or (3/+-4)*5 or
++-(3/*+-4)/5+- or +-(3/+-4)*5+- or (3/*+-4)/5+- or (3/+-4)*5+-
+drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_R3-2")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        Equal(N1, P1.B.R.n) )
+THEN Write(Right! [P1-subtree][B1.o.k][B2.L.n.k] is associative.)
+
+Example
+(3+4)+-5+- or +(3+4)+-5+- or (3*4)*5/*+- or /*+-(3*4)*5/*+-
+drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W3-2-1")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *)) ),
+        !Equal(N1, P1.B.R.n) )
+THEN Write(You can drag [OP1.k] over [P1.B.R.n.k] in [P1-subtree][B1.o.k][B2.L.n.k] for association.)
+
+Example
+(3+4)+-5+- or +(3+4)+-5+- or (3*4)*5/*+- or /*+-(3*4)*5/*+-
+drag '(' and drop on 'number' which is not '4' 
+*/
+
+/*
+Rule ID ("Rule_W3-2-2")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.R, B2), Equal(B2.o.k, {+, -}), HasAncestor(P1, B2), Include(B2.L, P1), HasChild(B2.R, B3),
+        Or( And(Equal(B1.o.k, {*, /}), HasChild(B3.L, N4)),
+            And(Equal(B1.o.k, {*, /}), HasChild(B3.L, B4)), HasChild(B4.L, N4)) ),
+        Equal(N1, P1.B.R.n) )
+THEN
+    IF AND(Equal(B3.L, N4), Equal(B3.o.k, {+, -}))
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5+-
+            Write([B1.o.k] before [P1-subtree] must be + for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5+-
+            Write([B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5+-
+            Write([B1.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+
+    ELSE IF AND(Equal(B3.L, N4), Equal(B3.o.k, {*, /}))
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5/*6
+            Write([B1.o.k] before [P1-subtree] must be + AND [B3.o.k] after [B3.L.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5/*6
+            Write([B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5/*6
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+
+    ELSE HasChild(B3.L, B4)
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5/*6+-
+            Write([B1.o.k] before [P1-subtree] must be + AND [B4.o.k] after [B4.L.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5/*6+-
+            Write([B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5/*6+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+
+Example
+/*(3/*+-4)+-5/*+-
+ drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W3-2-3")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B1), B3), Equal(B3.o.k, -)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, P1.B.R.n) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF Equal(P1.B.o.k, *)
+            ex)    (3*4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) (3/-4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+
+    ELSE IF  Equal(GParent(B1), B3)
+        IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, +))
+            ex)    -(3+4)+-5+-
+            Write([B3.o.k] before [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, *))
+            ex)    -(3*4)+-5+-
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, {/, -}))
+            ex)    -(3/-4)+-5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association)
+        ELSE IF And(Equal(B3.o.k, +),  Equal(P1.B.o.k, *))
+            ex)    +(3*4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association)
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +),  Equal(P1.B.o.k, {/, -}))
+            ex)    +(3/-4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association)
+
+Example
+ -(3/*+-4)+-5+- or +(3/*-4)+-5+- or (3/*-4)+-5+-
+ drag '(' and drop on '4'
+*/
+
+/*
+Rule ID ("Rule_W3-2-4")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, {+, -}), Or(Equal(B2.o.k, {*, /}) , HasChild(B2.L, B4)), Equal(GParent(B1), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Or(Equal(B2.o.k, {*, /}) , HasChild(B2.L, B4)), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, P1.B.R.n) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF Equal(P1.B.o.k, +)
+            ex) (3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) (3*4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B1.L.B.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) (3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+    ELSE IF Equal(GParent(B1), B3)
+        IF AND(Equal(B3.o.k, +), Equal(P1.B.o.k, +))
+            ex) +(3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+        ELSE IF AND(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) +-(3*4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B1.L.B.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, +), Equal(P1.B.o.k, {/, -}))
+            ex) +(3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, -), Equal(P1.B.o.k, +))
+            ex) -(3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B3.o.k] before [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B3.o.k] before [P1-subtree] must be + AND [B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, -), Equal(P1.B.o.k, {/, -}))
+            ex) -(3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+Example
++-(3/*+-4)+-5/* or (3/*+-4)+-5/*
+drag '(' and drop on '4' 
+*/
+
+/*
+Rule ID ("Rule_W3-2-5")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(B3.o, {+, -}), HasAncestor(B1, B3), Include(B3.R, P1), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(B3.o, {+, -}), HasAncestor(B1, B3), Include(B3.L, P1), Equal(GParent(B3), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.L.B, B1), Equal(Parent(B3), {E, P})) ),
+        Equal(N1, P1.B.R.n) )
+THEN
+    IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+        ex) (3*4)/5/* or +-(3*4)/5/*
+        Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, /), !Equal(P1.B.o.k, *))
+        ex) (3/+-4)/5/* or +-(3/+-4)/5/*
+        Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, *), !Equal(P1.B.o.k, *))
+        ex) (3/+-4)*5/* or +-(3/+-4)*5/*
+        Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
++-(3/*+-4)/5/* or +-(3/+-4)*5/* or (3/*+-4)/5/* or (3/+-4)*5/*
+drag '(' and drop on '4' 
+*/
+
+/*
+Rule ID ("Rule_R3-3")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +))
+            And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, B1.L.n) )
+THEN Write(Right! [B1.L.n.k][B1.o.k][P1-subtree] is associative.)
+
+Example
+2+(3+-4) or +2+(3+-4) or 2*(3*4) or /*+-2*(3*4)
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-3-1")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +))
+            And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {E, P})) ),
+        !Equal(N1, B1.L.n) )
+THEN Write(You can drag [OP1.k] over [B1.L.n.k] in [B1.L.n.k][B1.o.k][P1-subtree] for association.)
+
+Example
+2+(3+-4) or +2+(3+-4) or 2*(3*4) or /*+-2*(3*4)
+drag '(' and drop on 'number' which is not '2'
+*/
+
+/*
+Rule ID ("Rule_W3-3-2")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(P1.B.o.k, {*, /}), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, {+, -})),
+            And(Equal(P1.B.o.k, {*, /}), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, {+, -}), Equal(B1.o.k, -), Equal(GParent(B1), B2), Equal(B2.o.k, {+, -})),
+            And(Equal(P1.B.o.k, {+, -}), Equal(B1.o.k, -), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, B1.L.n) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF And(Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) 2+(3*4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) 2+(3/4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, *))
+            ex) 2-(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) 2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) 2-(3+-4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+    ELSE IF Equal(GParent(B1), B2)
+        IF And(Equal(B2.o.k, +), Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) +2+(3*4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) -2+(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) +2+(3/4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) -2+(3/4)
+            Write([B2.o.k] before [B1.L.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, *))
+            ex) +-2-(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) +2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) -2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) +2-(3+-4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) -2-(3+-4)
+            Write([B2.o.k] before [B1.L.n.k] must be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*4) or +-2+-(3/*4) or 2-(3+-4) or +-2-(3+-4)
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-3-3")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, B3),
+        Equal(B1.o.k, {+, -}), Equal(B2.R, N4), Include(B1.L, B2),
+        Equal(N1, B2.R.n) )
+THEN
+    IF And(Equal(B1.o.k, +), Equal(P1.B.o.k, {+, -}))
+        ex)/*2+(3+-4)
+        Write([B2.o.k] before [B2.R.n.k] must be + for association.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(P1.B.o.k, {+, -}))
+        ex)/*2-(3+-4)
+        Write([B2.o.k] before [B2.R.n.k] must be + AND [B1.o.k] between [B2.R.n.k] and [P1-subtree] must be + for association)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(P.B.o.k, *)
+        ex)/*2+-(3*4)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, +), Equal(P1.B.o.k, /))
+        ex)/*2+(3/4)
+        Write([B2.o.k] before [B2.R.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(P1.B.o.k, /))
+        ex)/*2-(3/4)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-4)
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-3-4")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, B3),
+        Or( And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.R.B, B1), Equal(B2.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(GParent(B1, B3)), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(Parent(B1), {E, P})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(Parent(B2), {E, P})) ),
+        Equal(N1, B1.L.n) )
+THEN
+    IF And(Or(Equal(Parent(B1), {E, P}), And( Equal(B2.L.B, B1), Equal(Parent(B2), {E, P})))  )
+        IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) 2/(3+-4) or 2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) 2/(3*4) or 2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) 2/(3/4) or 2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) 2*(3+-4) or 2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) 2*(3/4) or 2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(GParent(B1), B2), Equal(B2.R.B, B1))
+        IF And(Equal(B2.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) +2/(3+-4) or +2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) -2/(3+-4) or -2/(3+-4)+-
+            Write([B2.o.k] before [B1.L.n].k muast be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-2/(3*4) or +-2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) +2/(3/4) or +2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) -2/(3/4) or -2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) +2*(3+-4) or +2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) -2*(3+-4) or -2*(3+-4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) +-2*(3/4) or +-2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(GParent(B2), B3), Equal(B2.L.B, B1), Equal(GParent(B1), B3))
+        IF And(Equal(B3.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) +2/(3+-4) or +2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) -2/(3+-4) or -2/(3+-4)+-
+            Write([B3.o.k] before [B1.L.n].k muast be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-2/(3*4) or +-2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) +2/(3/4) or +2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) -2/(3/4) or -2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) +2*(3+-4) or +2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) -2*(3+-4) or -2*(3+-4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) +-2*(3/4) or +-2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2/(3/*+-4) or +-2/(3/*+-4) or 2*(3/+-4) or +-2*(3/+-4) or
+2/(3/*+-4)+- or +-2/(3/*+-4)+- or 2*(3/+-4)+- or +-2*(3/+-4)+-
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_R3-4")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4),
+        Or( And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal2(B2.o.k, *)) ),
+        Equal(N1, B2.L.n) )
+THEN
+    Write(Right! [B2.L.n.k][B2.o.k][P1-subtree] is associative.)
+
+Example
+2+(3+-4)+- or +2+(3+-4)+- or 2*(3*4)/*+- or /*+-2*(3*4)/*+-
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-1")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4),
+        Or( And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal2(B2.o.k, *)) ),
+        !Equal(N1, B2.L.n) )
+THEN
+    Write(You can drag [OP1.k] over [B2.L.n.k] in [B2.L.n.k][B2.o.k][P1-subtree] for association.)
+
+Example
+2+(3+-4)+- or +2+(3+-4)+- or 2*(3*4)/*+- or /*+-2*(3*4)/*+-
+drag '(' and drop 'number' which is not '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-2")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B2), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), HasChild(B3.L, N4), Equal(B3.o.k, {+, -}), Equal(GParent(B3), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), HasChild(B3.L, N4), Equal(B3.o.k, {+, -}), Equal(Parent(B3), {E, P})) ),
+        Equal(Or( Equal(N1, B2.L.n), And(Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(N1, B3.L.n))))
+THEN
+    IF And(Equal(B2.R.B, B1), Equal(Parent(B2), {E, P}))
+        IF(And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) 2+-(3*4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) 2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) 2-(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) 2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) 2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(GParent(B2), B4))
+        IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) +-2+-(3*4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) +2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association. )
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) -2+(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) +-2-(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) +2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) -2+(3+-4)/*
+            Write([B4.o.k] before [B2.L.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) +2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) -2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(Parent(B3), {E, P}))
+        IF(And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) 2+-(3*4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, +), Equal(P1.B.o.k, /)))
+            ex) 2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, -), Equal(P1.B.o.k, /)))
+            ex) 2-(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) 2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B3.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) 2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(GParent(B3), B4))
+        IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) +-2+-(3*4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) +2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association. )
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) -2+(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) +-2-(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) +2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) -2+(3+-4)/*
+            Write([B4.o.k] before [B3.L.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) +2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) -2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*+-4)/* or +-2+-(3/*+-4)/*
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-3")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4)
+        Or( And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, -), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, -), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, -)) ),
+        Equal(N1, B2.L.n) )
+THEN
+    IF Equal(Parent(B2), {E, P})
+        IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) 2+(3*4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) 2+(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+            ex) 2-(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) 2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) 2-(3+-4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+    ELSE IF Equal(GParent(B2), B3)
+        IF And(Equal(B3.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) +2+(3*4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) -2+(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) +2+(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) -2+(3/4)+-
+            Write([B3.o.k] before [B2.L.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+            ex) +-2-(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) +2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) -2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) +2-(3+-4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) -2-(3+-4)+-
+            Write([B3.o.k] before [B2.L.n.k] must be + AND [B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*4)+- or +-2+-(3/*4)+- or 2-(3+-4)+- or +-2-(3+-4)+- or -2+(3+-4)+-
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-4")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), Equal(B2.o.k, {+, -}), Equal(B4.R, N4), Include(B2.L, B4)),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -}), Equal(B4.R, N4), Include(B3.L, B4)) ),
+        Equal(N1, B4.R.n) )
+THEN
+    IF Equal(B2.R.B, B1)
+        IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -}))
+            ex) /*2+(3+-4)/*
+            Write([B4.o.k] before [B4.R.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) /*2-(3+-4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) /*2+-(3*4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, /))
+            ex) /*2+-(3/4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(B2.L.B, B1)
+        IF And(Equal(B3.o.k, +), Equal(P1.B.o.k, {+, -}))
+            ex) /*2+(3+-4)/*
+            Write([B4.o.k] before [B4.R.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) /*2-(3+-4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) /*2+-(3*4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, /))
+            ex) /*2+-(3/4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-4)/*
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-5")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Equal(B1.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(B3.R, N4), Include(B2.L, B3)
+        Equal(N1, B3.R.n) )
+THEN
+    IF And(Equal(B2.o.k, +), Equal(P.B.o.k, {+, -}))
+        ex)/*2+(3+-4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + for association.)
+    ELSE IF And(Equal(B2.o.k, -), Equal(P.B.o.k, {+, -}))
+        ex)/*2-(3+-4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + AND [B2.o.k] between [B2.R.n.k] and [P1-subtree] must be + for association)
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(P.B.o.k, *)
+        ex)/*2+-(3*4)+-
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B2.o.k, +), Equal(P.B.o.k, /))
+        ex)/*2+(3/4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B2.o.k, -), Equal(P.B.o.k, /))
+        ex)/*2-(3/4)+-
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-2)+-
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_W3-4-6")
+
+Rule
+IF And( Drag(OP1,N1),
+        Equal(Parent(OP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or(Equal(B1.o.k, /), And(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}))
+        Equal(N1, B1.L.n) )
+THEN
+    IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+        ex) /*2/(3*4) or /*2/(3*4)+-
+        Write([B1.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, /), !Equal(P1.B.o.k, *))
+        ex) /*2/(3/+-4) or /*2/(3/+-4)+-
+        Write([B1.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, *), !Equal(P1.B.o.k, *))
+        ex) /*2*(3/+-4) or /*2*(3/+-4)+-
+        Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2/(3/*+-4) or /*2/(3/*+-4)+- or /*2*(3/+-4) or /*2*(3/+-4)+-
+drag '(' and drop on '2'
+*/
+
+/*
+Rule ID ("Rule_R3-5")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +))
+            And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, P1.B.L.n) )
+THEN Write(Right! [B1.L.n.k][B1.o.k][P1-subtree] is associative.)
+
+Example
+2+(3+-4) or +2+(3+-4) or 2*(3*4) or /*+-2*(3*4)
+drag ')' and drop on '3' 
+*/
+
+/*
+Rule ID ("Rule_W3-5-1")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(GParent(B1), B2), Equal(B2.o.k, +))
+            And(Equal(B1.o.k, {*, /}), Equal(B1.o.k, +), Equal(Parent(B1), {E, P})) ),
+        !Equal(N1, P1.B.L.n) )
+THEN Write(You can drag [OP1.k] over [B1.L.n.k] in [B1.L.n.k][B1.o.k][P1-subtree] for association.)
+
+Example
+2+(3+-4) or +2+(3+-4) or 2*(3*4) or /*+-2*(3*4)
+drag ')' and drop on 'number' which is not '3'
+*/
+
+/*
+Rule ID ("Rule_W3-5-2")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, N4),
+        Or( And(Equal(P1.B.o.k, {*, /}), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, {+, -})),
+            And(Equal(P1.B.o.k, {*, /}), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, {+, -}), Equal(B1.o.k, -), Equal(GParent(B1), B2), Equal(B2.o.k, {+, -})),
+            And(Equal(P1.B.o.k, {+, -}), Equal(B1.o.k, -), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF And(Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) 2+(3*4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) 2+(3/4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, *))
+            ex) 2-(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) 2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) 2-(3+-4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+    ELSE IF Equal(GParent(B1), B2)
+        IF And(Equal(B2.o.k, +), Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) +2+(3*4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, +), Equal(P.B.o.k, *))
+            ex) -2+(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) +2+(3/4)
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, +), Equal(P.B.o.k, /))
+            ex) -2+(3/4)
+            Write([B2.o.k] before [B1.L.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(P.B.o.k, *))
+            ex) +-2-(3*4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) +2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, -), Equal(P.B.o.k, /))
+            ex) -2-(3/4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, +), Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) +2-(3+-4)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B1.o.k, -), Equal(B1.o.k, -), Equal(P.B.o.k, {+, -}))
+            ex) -2-(3+-4)
+            Write([B2.o.k] before [B1.L.n.k] must be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*4) or +-2+-(3/*4) or 2-(3+-4) or +-2-(3+-4)
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-5-3")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, B3),
+        Equal(B1.o.k, {+, -}), Equal(B2.R, N4), Include(B1.L, B2),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF And(Equal(B1.o.k, +), Equal(P1.B.o.k, {+, -}))
+        ex)/*2+(3+-4)
+        Write([B2.o.k] before [B2.R.n.k] must be + for association.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(P1.B.o.k, {+, -}))
+        ex)/*2-(3+-4)
+        Write([B2.o.k] before [B2.R.n.k] must be + AND [B1.o.k] between [B2.R.n.k] and [P1-subtree] must be + for association)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(P.B.o.k, *)
+        ex)/*2+-(3*4)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, +), Equal(P1.B.o.k, /))
+        ex)/*2+(3/4)
+        Write([B2.o.k] before [B2.R.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, -), Equal(P1.B.o.k, /))
+        ex)/*2-(3/4)
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-4)
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-5-4")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.L, B3),
+        Or( And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.R.B, B1), Equal(B2.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(GParent(B1, B3)), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(Parent(B1), {E, P})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(GParent(B1), B2), Equal(B2.L.B, B1), Equal(Parent(B2), {E, P})) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF And(Or(Equal(Parent(B1), {E, P}), And( Equal(B2.L.B, B1), Equal(Parent(B2), {E, P})))  )
+        IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) 2/(3+-4) or 2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) 2/(3*4) or 2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) 2/(3/4) or 2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) 2*(3+-4) or 2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) 2*(3/4) or 2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(GParent(B1), B2), Equal(B2.R.B, B1))
+        IF And(Equal(B2.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) +2/(3+-4) or +2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) -2/(3+-4) or -2/(3+-4)+-
+            Write([B2.o.k] before [B1.L.n].k muast be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-2/(3*4) or +-2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) +2/(3/4) or +2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) -2/(3/4) or -2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) +2*(3+-4) or +2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) -2*(3+-4) or -2*(3+-4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) +-2*(3/4) or +-2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(GParent(B2), B3), Equal(B2.L.B, B1), Equal(GParent(B1), B3))
+        IF And(Equal(B3.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) +2/(3+-4) or +2/(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, {+, -}))
+            ex) -2/(3+-4) or -2/(3+-4)+-
+            Write([B3.o.k] before [B1.L.n].k muast be + AND [B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-2/(3*4) or +-2/(3*4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) +2/(3/4) or +2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, /), Equal(P1.B.o.k, /))
+            ex) -2/(3/4) or -2/(3/4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) +2*(3+-4) or +2*(3+-4)+-
+            Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B1.o.k, *), Equal(P1.B.o.k, {+, -}))
+            ex) -2*(3+-4) or -2*(3+-4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B1.o.k, *), Equal(P1.B.o.k, /))
+            ex) +-2*(3/4) or +-2*(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2/(3/*+-4) or +-2/(3/*+-4) or 2*(3/+-4) or +-2*(3/+-4) or
+2/(3/*+-4)+- or +-2/(3/*+-4)+- or 2*(3/+-4)+- or +-2*(3/+-4)+-
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_R3-6")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4),
+        Or( And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal2(B2.o.k, *)) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    Write(Right! [B2.L.n.k][B2.o.k][P1-subtree] is associative.)
+
+Example
+2+(3+-4)+- or +2+(3+-4)+- or 2*(3*4)/*+- or /*+-2*(3*4)/*+-
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-6-1")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4),
+        Or( And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, {+, -}), !Equal(B1.o.k, {*, /}), Equal(B2.o.k, +), Equal(Parent(B2), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal2(B2.o.k, *)) ),
+        !Equal(N1, P1.B.L.n) )
+THEN
+    Write(You can drag [OP1.k] over [B2.L.n.k] in [B2.L.n.k][B2.o.k][P1-subtree] for association.)
+
+Example
+2+(3+-4)+- or +2+(3+-4)+- or 2*(3*4)/*+- or /*+-2*(3*4)/*+-
+drag ')' and drop on 'number' which is not '3' 
+*/
+
+/*
+Rule ID ("Rule_W3-6-2")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B2), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), HasChild(B3.L, N4), Equal(B3.o.k, {+, -}), Equal(GParent(B3), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), HasChild(B3.L, N4), Equal(B3.o.k, {+, -}), Equal(Parent(B3), {E, P})) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF And(Equal(B2.R.B, B1), Equal(Parent(B2), {E, P}))
+        IF(And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) 2+-(3*4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) 2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) 2-(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) 2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) 2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(GParent(B2), B4))
+        IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) +-2+-(3*4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) +2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association. )
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) -2+(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) +-2-(3/4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) +2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) -2+(3+-4)/*
+            Write([B4.o.k] before [B2.L.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) +2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) -2-(3+-4)/*
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(Parent(B3), {E, P}))
+        IF(And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) 2+-(3*4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, +), Equal(P1.B.o.k, /)))
+            ex) 2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, -), Equal(P1.B.o.k, /)))
+            ex) 2-(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B3.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) 2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B3.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) 2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF And(Equal(B2.R.B, B1), Equal(GParent(B3), B4))
+        IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *)))
+            ex) +-2+-(3*4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) +2+(3/4)/*
+            Write([P1.B.o.k] in [P1-subtree] must be + or - AND [B1.o.k] after [P1-subtree] must be + or - for association. )
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /)))
+            ex) -2+(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, {+, -}), Equal(B2.o.k, -), Equal(P1.B.o.k, /)))
+            ex) +-2-(3/4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) +2+(3+-4)/*
+            Write([B1.o.k] after [P1-subtree] must be + or - for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -})))
+            ex) -2+(3+-4)/*
+            Write([B4.o.k] before [B3.L.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) +2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF(And(Equal(B4.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -})))
+            ex) -2-(3+-4)/*
+            Write([B3.o.k] between [B3.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*+-4)/* or +-2+-(3/*+-4)/*
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-6-3")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2), HasChild(B2.L, N4)
+        Or( And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {*, /}), Equal(B2.o.k, {+, -}), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, -), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, -), Equal(Parent(B2), {E, P})),
+            And(Equal(B1.o.k, {+, -}), Equal(P1.B.o.k, {+, -}), Equal(B2.o.k, +), Equal(GParent(B2), B3), Equal(B3.o.k, -)) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF Equal(Parent(B2), {E, P})
+        IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) 2+(3*4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) 2+(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+            ex) 2-(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) 2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) 2-(3+-4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+    ELSE IF Equal(GParent(B2), B3)
+        IF And(Equal(B3.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) +2+(3*4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+            ex) -2+(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) +2+(3/4)+-
+            Write([P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, +), Equal(P1.B.o.k, /))
+            ex) -2+(3/4)+-
+            Write([B3.o.k] before [B2.L.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+            ex) +-2-(3*4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) +2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(B2.o.k, -), Equal(P1.B.o.k, /))
+            ex) -2-(3/4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) +2-(3+-4)+-
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, +), Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) -2-(3+-4)+-
+            Write([B3.o.k] before [B2.L.n.k] must be + AND [B2.o.k] between [B2.L.n.k] and [P1-subtree] must be + for association.)
+            Write([B2.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+2+-(3/*4)+- or +-2+-(3/*4)+- or 2-(3+-4)+- or +-2-(3+-4)+- or -2+(3+-4)+-
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-6-4")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or( And(Equal(B1.o.k, {*, /}), Equal(B2.R.B, B1), Equal(B2.o.k, {+, -}), Equal(B4.R, N4), Include(B2.L, B4)),
+            And(Equal(B1.o.k, {*, /}), Equal(B2.L.B, B1), Equal(GParent(B2), B3), Equal(B3.o.k, {+, -}), Equal(B4.R, N4), Include(B3.L, B4)) ),
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF Equal(B2.R.B, B1)
+        IF And(Equal(B2.o.k, +), Equal(P1.B.o.k, {+, -}))
+            ex) /*2+(3+-4)/*
+            Write([B4.o.k] before [B4.R.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) /*2-(3+-4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) /*2+-(3*4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B2.o.k, {+, -}), Equal(P1.B.o.k, /))
+            ex) /*2+-(3/4)/*
+            Write([B2.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(B2.L.B, B1)
+        IF And(Equal(B3.o.k, +), Equal(P1.B.o.k, {+, -}))
+            ex) /*2+(3+-4)/*
+            Write([B4.o.k] before [B4.R.n.k] must be + AND [B1.o.k] after [P1-subtree] must be + or - for association.)
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -), Equal(P1.B.o.k, {+, -}))
+            ex) /*2-(3+-4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) /*2+-(3*4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, /))
+            ex) /*2+-(3/4)/*
+            Write([B3.o.k] between [B4.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-4)/*
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-6-5")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Equal(B1.o.k, {+, -}), Equal(B2.o.k, {+, -}), Equal(B3.R, N4), Include(B2.L, B3)
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF And(Equal(B2.o.k, +), Equal(P.B.o.k, {+, -}))
+        ex)/*2+(3+-4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + for association.)
+    ELSE IF And(Equal(B2.o.k, -), Equal(P.B.o.k, {+, -}))
+        ex)/*2-(3+-4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + AND [B2.o.k] between [B2.R.n.k] and [P1-subtree] must be + for association)
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF Equal(P.B.o.k, *)
+        ex)/*2+-(3*4)+-
+        Write([B1.o.k] between [B2.R.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B2.o.k, +), Equal(P.B.o.k, /))
+        ex)/*2+(3/4)+-
+        Write([B3.o.k] before [B3.R.n.k] must be + AND [P1.B.o.k] in [P1-subtree] must be + or - for association.)
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B2.o.k, -), Equal(P.B.o.k, /))
+        ex)/*2-(3/4)+-
+        Write([B2.o.k] between [B3.R.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2+-(3/*+-2)+-
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_W3-6-6")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), Equal(GParent(B1), B2),
+        Or(Equal(B1.o.k, /), And(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}))
+        Equal(N1, P1.B.L.n) )
+THEN
+    IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+        ex) /*2/(3*4) or /*2/(3*4)+-
+        Write([B1.o.k] between [B2.L.n.k] and [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, /), !Equal(P1.B.o.k, *))
+        ex) /*2/(3/+-4) or /*2/(3/+-4)+-
+        Write([B1.o.k] between [B2.L.n.k] and [P1-subtree] must be * AND [P1.B.o.k] in [P1-subtree] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, *), !Equal(P1.B.o.k, *))
+        ex) /*2*(3/+-4) or /*2*(3/+-4)+-
+        Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
+/*2/(3/*+-4) or /*2/(3/*+-4)+- or /*2*(3/+-4) or /*2*(3/+-4)+-
+drag ')' and drop on '3'
+*/
+
+/*
+Rule ID ("Rule_R3-7")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        Equal(N1, B1.R.n) )
+THEN Write(Right! [P1-subtree][B1.o.k][B1.R.n.k] is associative.)
+
+Example
+(3+4)+-5 or +(3+4)+-5 or (3*4)*5 or /*+-(3*4)*5
+drag ')' and drop on '5' 
+*/
+
+/*
+Rule ID ("Rule_W3-7-1")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        !Equal(N1, B1.R.n) )
+THEN Write(You can drag [OP1.k] over [P1.B.R.n.k] in [P1-subtree][B1.o.k][B1.R.n.k] for association.)
+
+Example
+(3+4)+-5 or +(3+4)+-5 or (3*4)*5 or /*+-(3*4)*5
+drag ')' and drop on 'number' which is not '5'
+*/
+
+/*
+Rule ID ("Rule_W3-7-2")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), Equal(B2.o.k, {+, -}), HasAncestor(P1, B2), HasChild(B2.R, N4),
+        Equal(B1.o.k, {*, /}),
+        Equal(N1, B2.R.n) )
+THEN 
+    IF Equal(P1.B.o.k, +)
+        ex) /*(3+4)+-5
+        Write([B1.o.k] before [P1-subtree] must be + for association.)
+    ELSE IF And(Equal(B1.o.k, *) ,Equal(P1.B.o.k, *))
+        ex) *(3*4)+-5
+        Write([B2.o.k] between [P1-subtree] and [B2.R.n.k] must be * for association.)
+    ELSE
+        ex) /*(3/-4)+-5 or /(3*4)+-5
+        Write([B1.o.k] between [B1.L.n.k] and [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+
+Example
+/*(3/*+-4)+-5
+drag ')' and drop on '5' 
+*/
+
+/*
+Rule ID ("Rule_W3-7-3")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, -)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(GParent(B1), B2), Equal(B2.o.k, +)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), Equal(Parent(B1), {E, P}) ),
+        Equal(N1, B1.R.n) )
+THEN
+    IF AND(Equal(Parent(B1), {E, P}), Equal(P1.B.o.k, *))
+        ex) (3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(Parent(B1), {E, P}), !Equal(P1.B.o.k, *))
+        ex) (3/-4)-+5
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, -), Equal(P1.B.o.k, *))
+        ex) -(3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([B2.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, -), Equal(P1.B.o.k, {/, -}))
+        ex) -(3/-4)-+5
+        Write()
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, +), Equal(P1.B.o.k, *))
+        ex) +(3*4)-+5
+        Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.o.k, +), Equal(P1.B.o.k, {/, -}))
+        ex) +(3/-4)-+5
+        Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+
+Example
+-(3/*+-4)+-5 or +(3/*-4)-+5 or (3/*-4)-+5
+drag ')' and drop on '5' 
+*/
+
+/*
+Rule ID ("Rule_W3-7-4")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, N4),
+        Or( And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.R.B, B1), Equal(B2.o.k, {+, -})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(GParent(B2), B3), Equal(B2.o.k, {+, -})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(Parent(B1), {P, E})),
+            And(Or(Equal(B1.o.k, /), And(Equal(P1.B.o.k, *), Equal(B1.o.k, *))), Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(Parent(B2), {E, P})) ),
+        Equal(N1, B1.R.n) )    
+THEN
+    IF AND(Or(Equal(Parent(B1), {E, P}), And(Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(Parent(B2), {E, P}))))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) (3*4)/5 or (3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +))
+            ex) (3+4)/5 or (3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}))
+            ex) (3/-4)/5 or (3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +))
+            ex) (3+4)*5 or (3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) (3/-4)*5 or (3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(B2.R.B, B1))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-(3*4)/5 or +-(3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B2.o.k, +))
+            ex) +(3+4)/5 or +(3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B2.o.k, -))
+            ex) -(3+4)/5 or -(3+4)/5+-
+            Write([B2.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B2.o.k, +))
+            ex) +(3/-4)/5 or +(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B2.o.k, -))
+            ex) -(3/-4)/5 or -(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B2.o.k, +))
+            ex) +(3+4)*5 or +(3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B2.o.k, -))
+            ex) -(3+4)*5 or -(3+4)*5+-
+            Write([B2.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) +-(3/-4)*5 or +-(3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+    ELSE IF AND(Equal(GParent(B1), B2), Equal(R2.L.B, B1), Equal(GParent(B2), B3))
+        IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+            ex) +-(3*4)/5 or +-(3*4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B3.o.k, +))
+            ex) +(3+4)/5 or +(3+4)/5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, +), Equal(B3.o.k, -))
+            ex) -(3+4)/5 or -(3+4)/5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B3.o.k, +))
+            ex) +(3/-4)/5 or +(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, /), Equal(P1.B.o.k, {/, -}), Equal(B3.o.k, -))
+            ex) -(3/-4)/5 or -(3/-4)/5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B3.o.k, +))
+            ex) +(3+4)*5 or +(3+4)*5+-
+            Write([B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, +), Equal(B3.o.k, -))
+            ex) -(3+4)*5 or -(3+4)*5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [B1.o.k] between [P1-subtree] and [B1.R.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+        ELSE IF AND(Equal(B1.o.k, *), Equal(P1.B.o.k, {/, -}))
+            ex) +-(3/-4)*5 or +-(3/-4)*5+-
+            Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
++-(3/*+-4)/5 or +-(3/+-4)*5 or (3/*+-4)/5 or (3/+-4)*5 or
++-(3/*+-4)/5+- or +-(3/+-4)*5+- or (3/*+-4)/5+- or (3/+-4)*5+-
+drag ')' and drop on '5' 
+*/
+
+/*
+Rule ID ("Rule_R3-8")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *) ),
+        Equal(N1, B2.L.n) )
+THEN Write(Right! [P1-subtree][B1.o.k][B2.L.n.k] is associative.)
+
+Example
+(3+4)+-5+- or +(3+4)+-5+- or (3*4)*5/*+- or /*+-(3*4)*5/*+-
+drag ')' and drop on '5'
+*/
+
+/*
+Rule ID ("Rule_W3-8-1")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), !Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(P1.B.o.k, *), Equal(B1.o.k, *)) ),
+        !Equal(N1, B2.L.n) )
+THEN Write(You can drag [OP1.k] over [P1.B.R.n.k] in [P1-subtree][B1.o.k][B2.L.n.k] for association.)
+
+Example
+(3+4)+-5+- or +(3+4)+-5+- or (3*4)*5/*+- or /*+-(3*4)*5/*+-
+drag ')' and drop on 'number' which is not '5'
+*/
+
+/*
+Rule ID ("Rule_W3-8-2")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.R.P, P1), HasChild(B1.R, B2), Equal(B2.o.k, {+, -}), HasAncestor(P1, B2), Include(B2.L, P1), HasChild(B2.R, B3),
+        Or( And(Equal(B1.o.k, {*, /}), HasChild(B3.L, N4)),
+            And(Equal(B1.o.k, {*, /}), HasChild(B3.L, B4)), HasChild(B4.L, N4)) ),
+        Or( Equal(N1, B3.L.n), And(HasChild(B3.L, B4), Equal(N1, B4.L.n)) ) )
+THEN
+    IF AND(Equal(B3.L, N4), Equal(B3.o.k, {+, -}))
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5+-
+            Write([B1.o.k] before [P1-subtree] must be + for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5+-
+            Write([B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5+-
+            Write([B1.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association.)
+
+    ELSE IF AND(Equal(B3.L, N4), Equal(B3.o.k, {*, /}))
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5/*6
+            Write([B1.o.k] before [P1-subtree] must be + AND [B3.o.k] after [B3.L.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5/*6
+            Write([B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5/*6
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B3.L.n.k] must be * for association.)
+
+    ELSE HasChild(B3.L, B4)
+        IF Equal(P1.B.o.k, +)
+            ex) /*(3+4)+-5/*6+-
+            Write([B1.o.k] before [P1-subtree] must be + AND [B4.o.k] after [B4.L.n.k] must be + or - for association.)
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) /*(3*4)+-5/*6+-
+            Write([B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) /*(3/-4)+-5/*6+-
+            Write([P1.B.o.k] in [P1-subtree] must be * AND [B2.o.k] between [P1-subtree] and [B4.L.n.k] must be * for association.)
+
+Example
+/*(3/*+-4)+-5/*+-
+drag ')' and drop on '5'
+*/
+
+/*
+Rule ID ("Rule_W3-8-3")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B1), B3), Equal(B3.o.k, -)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(GParent(B1), B3), Equal(B3.o.k, +)),
+            And(!Equal(P1.B.o.k, +), Equal(B1.o.k, {+, -}), HasChild(B2.L, N4), Equal(B2.o.k, {+, -}), Equal(Parent(B1), {E, P})) ),
+        Equal(N1, B2.L.n) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF Equal(P1.B.o.k, *)
+            ex)    (3*4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) (3/-4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association.)
+
+    ELSE IF  Equal(GParent(B1), B3)
+        IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, +))
+            ex)    -(3+4)+-5+-
+            Write([B3.o.k] before [P1-subtree] must be + for association.)
+        ELSE IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, *))
+            ex)    -(3*4)+-5+-
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, -),  Equal(P1.B.o.k, {/, -}))
+            ex)    -(3/-4)+-5+-
+            Write([B3.o.k] before [P1-subtree] must be + AND [P1.B.o.k] in [P1-subtree] must be + for association)
+        ELSE IF And(Equal(B3.o.k, +),  Equal(P1.B.o.k, *))
+            ex)    +(3*4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association)
+            Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+        ELSE IF And(Equal(B3.o.k, +),  Equal(P1.B.o.k, {/, -}))
+            ex)    +(3/-4)+-5+-
+            Write([P1.B.o.k] in [P1-subtree] must be + for association)
+
+Example
+ -(3/*+-4)+-5+- or +(3/*-4)+-5+- or (3/*-4)+-5+-
+drag ')' and drop on '5'
+*/
+
+/*
+Rule ID ("Rule_W3-8-4")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, {+, -}), Or(Equal(B2.o.k, {*, /}) , HasChild(B2.L, B4)), Equal(GParent(B1), B3), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, {+, -}), Or(Equal(B2.o.k, {*, /}) , HasChild(B2.L, B4)), Equal(Parent(B1), {E, P})) ),
+        Or( Equal(N1, B2.L.n), And(HasChild(B2.L, B4), Equal(N1, B4.L.n)) ) )
+THEN
+    IF Equal(Parent(B1), {E, P})
+        IF Equal(P1.B.o.k, +)
+            ex) (3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+        ELSE IF Equal(P1.B.o.k, *)
+            ex) (3*4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B1.L.B.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF Equal(P1.B.o.k, {/, -})
+            ex) (3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+    ELSE IF Equal(GParent(B1), B3)
+        IF AND(Equal(B3.o.k, +), Equal(P1.B.o.k, +))
+            ex) +(3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B2.o.k] after [B2.L.n.k] must be + or - for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+
+        ELSE IF AND(Equal(B3.o.k, {+, -}), Equal(P1.B.o.k, *))
+            ex) +-(3*4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B1.L.B.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, +), Equal(P1.B.o.k, {/, -}))
+            ex) +(3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be + AND [B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, -), Equal(P1.B.o.k, +))
+            ex) -(3+4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([B3.o.k] before [P1-subtree] must be + AND [B2.o.k] after [B2.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([B3.o.k] before [P1-subtree] must be + AND [B2.L.B.o.k] after [B2.L.B.L.n.k] must be + or - for association.)
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+        ELSE IF AND(Equal(B3.o.k, -), Equal(P1.B.o.k, {/, -}))
+            ex) -(3/-4)+-5/*
+            IF Equal(B2.o.k, {*, /})
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+            ELSE IF Equal(HasChild(B2.L, B4))
+                Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.B.L.n.k] must be * for association.)
+
+Example
++-(3/*+-4)+-5/* or (3/*+-4)+-5/*
+drag ')' and drop on '5' 
+*/
+
+/*
+Rule ID ("Rule_W3-8-5")
+
+Rule
+IF And( Drag(CP1,N1),
+        Equal(Parent(CP1), P1), HasChild(P1.B.L, N2), HasChild(P1.B.R, N3), 
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Equal(GParent(P1), B1), Equal(B1.L.P, P1), HasChild(B1.R, B2),
+        Or( And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(B3.o, {+, -}), HasAncestor(B1, B3), Include(B3.R, P1), Equal(B3.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(B3.o, {+, -}), HasAncestor(B1, B3), Include(B3.L, P1), Equal(GParent(B3), B4), Equal(B4.o.k, {+, -})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(Parent(B1), {E, P})),
+            And(Equal(B1.o.k, /), Or(!Equal(P1.B.o.k, *), Equal(B1.o.k, *)), Equal(B2.o.k, {*, /}), Equal(GParent(B1), B3), Equal(B3.L.B, B1), Equal(Parent(B3), {E, P})) ),
+        Equal(N1, B2.L.n) )
+THEN
+    IF And(Equal(B1.o.k, /), Equal(P1.B.o.k, *))
+        ex) (3*4)/5/* or +-(3*4)/5/*
+        Write([B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, /), !Equal(P1.B.o.k, *))
+        ex) (3/+-4)/5/* or +-(3/+-4)/5/*
+        Write([P1.B.o.k] in [P1-subtree] must be * AND [B1.o.k] between [P1-subtree] and [B2.L.n.k] must be * for association.)
+    ELSE IF And(Equal(B1.o.k, *), !Equal(P1.B.o.k, *))
+        ex) (3/+-4)*5/* or +-(3/+-4)*5/*
+        Write([P1.B.o.k] in [P1-subtree] must be * for association.)
+
+Example
++-(3/*+-4)/5/* or +-(3/+-4)*5/* or (3/*+-4)/5/* or (3/+-4)*5/*
+drag ')' and drop on '5' 
+*/
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Distributive Law
+
+/*
+Rule ID ("Rule_R4-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        Equal(B1.o.k, *), Include(B1.R, P1),
+        Equal(O1, B1.o) )
+THEN Write(Right! You simplified the expression by [O1]ing [N1.k] and [P1-subtree].)
+
+Example
+/*+-2*(3+-4)/*+-
+drag '2' and drop on 'operator' between '2' and '(3+-4)'
+*/
+
+
+/*
+Rule ID ("Rule_W4-1-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        Equal(B1.o.k, *), Include(B1.R, P1),
+        !Equal(O1, B1.o) )
+THEN Write(You must first simplify [N1.k][B1.o.k][P1-subtree] before continuing.)
+
+Example
+/*+-2*(3+-4)/*+-
+ drag '2' and drop on 'operator' which is not between '2' and '(3+-4)'
+*/
+
+/*
+Rule ID ("Rule_W4-1-2")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1), Equal(B1.L.n, N1), !HasChild(B1.R, N3),
+        Or( And(HasChild(B1.R, P1), !Equal(B1.o, *)),
+            And(HasChild(B1.R, B2), HasChild(B2.L, P1), !Equal(B1.o, *)) ),
+        Equal(O1, B1.o) )
+THEN Write([O1.k] between [N1] and [P1-subtree] must be * for distribution.)
+
+Example
+2/+-(3+-4) or 2/+-(3+-4)+- or +-2/+-(3+-4) or +-2/+-(3+-4)+- or /*2/(3+-4)/*+-
+drag '2' and drop on 'operator' between '2' and '(3+-4)'
+*/
+
+/*
+Rule ID ("Rule_W4-1-3")
+
+Rule
+IF And( Drag(N1,O1),
+        Or( And(Equal(B1.o.k, {*, /}), HasChild(B2.R, P1)),
+            And(Equal(B1.o.k, {*, /}), HasChild(B2.R, B3), HasChild(B3.L, P1)),
+            And(Equal(B1.o.k, {*, /}), HasChild(B2.R, B3), HasChild(B3.L, B4), HasChild(B3.L, P1)) ),
+        Equal(O1, B2.o) )
+THEN Write([O1.k] between [N1] and [P1-subtree] must be * for distribution.)    
+
+Example
+/*2+-(3+-4) or /*2+-(3+-4)/*+- 
+drag '2' and drop on 'operator' between '2' and '(3+-4)'
+*/
+
+/*
+Rule ID ("Rule_R4-2")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1),
+        Or( And(Equal(B1.L.n, N1), Equal(GParent(B1), B2), HasChild(B2.L, P1), Equal(B2.o.k, *)),
+            And(Equal(B1.R.n, N1), HasChild(B1.L, P1), Equal(B1.o.k, *)) ),
+        And(Equal(GParent(P1), B3), Equal(B3.o, O1)) )
+THEN Write(You simplified the expression by [O1]ing [P1-subtree] and [N1.k].)            
+
+Example
+/*+-(3+-4)*5/*+-
+drag '5' and drop on 'operator' between '(3+-4)' and '5'
+*/
+
+/*
+Rule ID ("Rule_W4-2-1")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1),
+        Or( And(Equal(B1.L.n, N1), Equal(GParent(B1), B2), HasChild(B2.L, P1), Equal(B2.o.k, *)),
+            And(Equal(B1.R.n, N1), HasChild(B1.L, P1), Equal(B1.o.k, *)) ),
+        And(Equal(GParent(P1), B3), !Equal(B3.o, O1)) )
+THEN Write(You must first simplify [P1-subtree][B1.o.k][N1.k] before continuing.)            
+
+Example
+/*+-(3+-4)*5/*+-
+drag '5' and drop on 'operator' which is not between '(3+-4)' and '5'
+*/
+
+/*
+Rule ID ("W4-2-2")
+
+Rule
+IF And( Drag(N1,O1),
+        Equal(GParent(N1), B1),
+        Or( And(Equal(B1.L.n, N1), Equal(GParent(B1), B2), HasChild(B2.L, P1), !Equal(B2.o.k, *), Equal(B2.o, O1)),
+            And(Equal(B1.L.n, N1), Equal(GParent(B1), B2), Include(B2.L, P1), Equal(Parent(P1), R), !Equal(B2.o.k, *), Equal(B2.o, O1)),
+            And(Equal(B1.R.n, N1), HasChild(B1.L, P1), !Equal(B1.o.k, *), Equal(B1.o, O1)),
+            And(Equal(B1.R.n, N1), Include(B1.L, P1), Equal(Parent(P1), R), !Equal(B1.o.k, *), Equal(B1.o, O1)) ),
+        And(Equal(GParent(P1), B3), Equal(B3.o, O1)) )
+THEN Write([O1.k] between [P1-subtree] and [N1.k] must be * for distribution.)
+
+Example
+(3+-4)/+-5 or /*+-(3+-4)/+-5 or (3+-4)/+-5/*+- or +-(3+-4)/+-5/*+-
+drag '5' and drop on 'operator' between '(3+-4)' and '5'
+*/
+
+/*
+Rule ID ("Rule_R4-3")
+
+Rule
+IF And( Drag(N1,OP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        Or( And(Include(P1.B.L, N1), Include(P1.B.R, N1.k)),
+            And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        Equal(OP1, P1.open) );
+THEN Write(Right! [P1-subtree] is distributive.)
+
+Example
+(3*4+-4*5)
+drag '4' and drop on '('
+*/
+
+/*
+Rule ID ("Rule_W4-3-1")
+
+Rule
+IF And( Drag(N1,OP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        Or( And(Include(P1.B.L, N1), Include(P1.B.R, N1.k)),
+            And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        !Equal(OP1, P1.open) );
+THEN Write(Right! [P1-subtree] is distributive.)
+
+Example
+(3*4+-4*5)
+drag '4' and drop on '(' which is not in (3*4+-4*5)
+*/
+
+/*
+Rule ID ("Rule_W4-3-2")
+
+Rule
+IF And( Drag(N1,OP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        !Or( And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+             And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        Equal(OP1, P1.open) );
+THEN
+    IF Equal(Include(P1.B.L, N1))
+        Write(A multiple of N1 must be in [P1.B.R-subtree] for distribution.)
+    ELSE
+        Write(A multiple of N1 must be in [P1.B.L-subtree] for distribution.)
+
+Example
+(3*4+-5*6)
+drag '4' and drop on '('
+*/
+
+/*
+Rule ID ("Rule_R4-4")
+
+Rule
+IF And( Drag(N1,CP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        Or( And(Include(P1.B.L, N1), Include(P1.B.R, N1.k)),
+            And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        Equal(CP1, P1.close) );
+THEN Write(Right! <P1-subtree> is distributive.)
+
+Example
+(3*4+-4*5)
+drag '4' and drop on ')'
+*/
+
+/*
+Rule ID ("Rule_W4-4-1")
+
+Rule
+IF And( Drag(N1,CP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        Or( And(Include(P1.B.L, N1), Include(P1.B.R, N1.k)),
+            And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, N1.k))),
+            And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        !Equal(CP1, P1.close) );
+THEN Write(You can drag [N1.k] over [CP1.k] in [P1-subtree] for distribution.)
+
+Example
+(3*4+-4*5)
+drag '4' and drop on ')'
+*/
+
+/*
+Rule ID ("Rule_W4-3-2")
+
+Rule
+IF And( Drag(N1,CP1),
+        HasAncestor(N1, P1), Equal(P1.B.o.k, {+, -})
+        !Or( And(Include(P1.B.L, N1), Include(P1.B.R, Multiple(N1.k))),
+             And(Include(P1.B.R, N1), Include(P1.B.L, Multiple(N1.k))) )
+        Equal(CP1, P1.close) );
+THEN
+    IF Equal(Include(P1.B.L, N1))
+        Write(A multiple of N1 must be in [P1.B.R-subtree] for distribution.)
+    ELSE
+        Write(A multiple of N1 must be in [P1.B.L-subtree] for distribution.)
+
+Example
+(3*4+-5*6)
+drag '4' and drop on '('
+*/
